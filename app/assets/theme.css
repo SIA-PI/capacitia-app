@@ -1,0 +1,42 @@
+:root{ --bg:#0f1220; --panel:#11142a; --muted:#7780a1; --text:#e6e7ee; --accent:#7DD3FC; --accent2:#34D399; }
+
+html, body, [data-testid="stAppViewContainer"] {
+  background: var(--bg);
+  color: var(--text) !important;
+}
+
+/* esconder sidebar */
+[data-testid="stSidebar"],
+[data-testid="stSidebarNav"],
+section[data-testid="stSidebar"]{ display:none !important; }
+
+header [data-testid="stToolbar"]{ visibility:hidden; }
+
+/* layout spacing */
+[data-testid="stAppViewContainer"] .main .block-container{ padding-top: 72px !important; }
+.hero { margin-top: 8px; }
+.sep{ border-top:1px solid #1e2443; margin:16px 0 12px 0; }
+
+/* hero card */
+.hero {
+  background:
+    radial-gradient(1200px 400px at 10% -20%, rgba(125,211,252,.15), transparent),
+    radial-gradient(1000px 400px at 90% -30%, rgba(52,211,153,.12), transparent),
+    linear-gradient(180deg, #0f1220 0%, #0f1220 100%);
+  border:1px solid #1e2443; border-radius:18px; padding:20px; margin-bottom:12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.25);
+}
+
+/* KPI cards */
+.kpi{ background: var(--panel); border:1px solid #1e2443; border-radius:16px; padding:16px; }
+.kpi h4{ font-size:.85rem; font-weight:600; color:var(--muted); margin:0 0 6px 0; }
+.kpi .val{ font-size:1.6rem; font-weight:800; letter-spacing:.2px; }
+
+/* Panels */
+.panel{ background: var(--panel); border:1px solid #1e2443; border-radius:18px; padding:14px; }
+.panel h3{ margin:0 0 6px 0; font-size:1.0rem; }
+.js-plotly-plot, .plot-container{ border-radius:12px; }
+
+@media (max-width: 1200px){
+  [data-testid="stAppViewContainer"] .main .block-container{ padding-top: 84px !important; }
+}
