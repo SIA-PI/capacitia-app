@@ -1,0 +1,61 @@
+services:
+  capacitia-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.coolify
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Informe a chave da origem}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://new-plataforma.sobdemanda.mandu.piaui.pro/v1}
+      TZ: America/Fortaleza
+    expose: ["8501"]
+    volumes:
+      - dados:/app/.data
+    networks: [coolify]
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=coolify'
+      - 'traefik.http.services.ddia-capacitia.loadbalancer.server.port=8501'
+      - 'traefik.http.services.ddia-capacitia.loadbalancer.responseforwarding.flushinterval=-1ms'
+      - 'traefik.http.routers.ddia-capacitia.rule=Host(`dash.sia.pi.gov.br`)'
+      - 'traefik.http.routers.ddia-capacitia.entrypoints=https'
+      - 'traefik.http.routers.ddia-capacitia.tls=true'
+      - 'traefik.http.routers.ddia-capacitia.service=ddia-capacitia'
+      - 'traefik.http.routers.ddia-capacitia.middlewares=ddia-capacitia-headers,ddia-capacitia-rate'
+      - 'traefik.http.middlewares.ddia-capacitia-headers.headers.stsSeconds=63072000'
+      - 'traefik.http.middlewares.ddia-capacitia-headers.headers.contentTypeNosniff=true'
+      - 'traefik.http.middlewares.ddia-capacitia-headers.headers.customFrameOptionsValue=SAMEORIGIN'
+      - 'traefik.http.middlewares.ddia-capacitia-headers.headers.referrerPolicy=strict-origin-when-cross-origin'
+      - 'traefik.http.middlewares.ddia-capacitia-rate.ratelimit.average=30'
+      - 'traefik.http.middlewares.ddia-capacitia-rate.ratelimit.burst=50'
+      - 'traefik.http.routers.ddia-capacitia-upload.rule=Host(`dash.sia.pi.gov.br`) && (Method(`POST`) || Method(`PUT`) || Method(`PATCH`))'
+      - 'traefik.http.routers.ddia-capacitia-upload.entrypoints=https'
+      - 'traefik.http.routers.ddia-capacitia-upload.tls=true'
+      - 'traefik.http.routers.ddia-capacitia-upload.service=ddia-capacitia'
+      - 'traefik.http.routers.ddia-capacitia-upload.middlewares=ddia-capacitia-headers,ddia-capacitia-rate,ddia-capacitia-upload'
+      - 'traefik.http.middlewares.ddia-capacitia-upload.buffering.maxRequestBodyBytes=104857600'
+      - 'traefik.http.routers.ddia-capacitia-http.rule=Host(`dash.sia.pi.gov.br`)'
+      - 'traefik.http.routers.ddia-capacitia-http.entrypoints=http'
+      - 'traefik.http.routers.ddia-capacitia-http.service=ddia-capacitia'
+      - 'traefik.http.routers.ddia-capacitia-http.middlewares=ddia-capacitia-https'
+      - 'traefik.http.middlewares.ddia-capacitia-https.redirectscheme.scheme=https'
+      - 'traefik.http.middlewares.ddia-capacitia-https.redirectscheme.permanent=true'
+
+networks:
+  coolify:
+    external: true
+
+volumes:
+  dados: {}

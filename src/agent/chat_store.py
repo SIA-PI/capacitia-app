@@ -1,15 +1,35 @@
 import sqlite3
+import os
+import tempfile
 from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
 
 DB_PATH = Path(__file__).resolve().parent.parent.parent / ".data" / "chat" / "chat_history.db"
+_FALLBACK_PATH = None
+
+
+def _get_writable_path():
+    global _FALLBACK_PATH
+    if _FALLBACK_PATH:
+        return _FALLBACK_PATH
+
+    path = DB_PATH
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path.parent / ".write_test", "w") as f:
+            f.write("ok")
+        os.remove(path.parent / ".write_test")
+        return path
+    except (OSError, PermissionError):
+        fallback = Path(tempfile.gettempdir()) / "capacitia_chat_history.db"
+        _FALLBACK_PATH = fallback
+        return fallback
 
 
 class ChatStore:
     def __init__(self):
-        self.db_path = DB_PATH
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.db_path = _get_writable_path()
         self._init_db()
 
     def _init_db(self):
